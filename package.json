@@ -11,8 +11,5 @@
   },
   "dependencies": {
     "jsonwebtoken": "^8.1.0"
-  },
-  "peerDependencies": {
-    "aws-sdk": "^2.180.0"
   }
 }
