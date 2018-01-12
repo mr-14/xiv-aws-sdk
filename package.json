@@ -1,0 +1,15 @@
+{
+  "name": "xiv-aws-sdk",
+  "description": "Provides SDK for AWS",
+  "version": "0.0.1",
+  "main": "src",
+  "private": true,
+  "author": "Mr. 14 <suke.shou@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "jsonwebtoken": "^8.1.0"
+  },
+  "peerDependencies": {
+    "aws-sdk": "^2.180.0"
+  }
+}
