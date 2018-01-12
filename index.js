@@ -1,5 +1,5 @@
-const lambda = required('./src/lambda')
-const dynamodb = required('./src/dynamodb')
+const lambda = require('./src/lambda')
+const dynamodb = require('./src/dynamodb')
 
 module.exports = {
   lambda,
