@@ -1,7 +1,7 @@
 {
   "name": "xiv-aws-sdk",
   "description": "Provides SDK for AWS",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "main": "index.js",
   "author": "Mr. 14 <suke.shou@gmail.com>",
   "license": "MIT",
@@ -9,9 +9,7 @@
     "type": "git",
     "url": "git@github.com:mr-14/xiv-aws-sdk.git"
   },
-  "dependencies": {
-    "jsonwebtoken": "^8.1.0"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "aws-sdk": "^2.180.0"
   }
