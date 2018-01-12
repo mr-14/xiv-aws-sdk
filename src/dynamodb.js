@@ -14,3 +14,17 @@ exports.put = (tableName, item) => {
     })
   })
 }
+
+exports.get = (tableName, key) => {
+  const params = { TableName: tableName, Key: key }
+
+  return new Promise((resolve, reject) => {
+    docClient.get(params, (err, data) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(data)
+      }
+    })
+  })
+}
