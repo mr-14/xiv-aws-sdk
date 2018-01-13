@@ -44,3 +44,36 @@ exports.query = (tableName, keys) => {
     docClient.query(params, (err, data) => { err ? reject(err) : resolve(data) })
   })
 }
+
+exports.update = (tableName, key, items) => {
+  let itemClause = 'set ',
+    itemVals = {},
+    delim = ''
+
+  items.forEach(item => {
+    const itemOp = item.op || '='
+    itemVals[':' + item.key] = item.val
+    itemClause += delim + item.key + keyOp + ':' + item.key
+    delim = ', '
+  })
+
+  const params = {
+    TableName: tableName,
+    Key: key,
+    UpdateExpression: itemClause,
+    ExpressionAttributeValues: itemVals,
+    ReturnValues: 'ALL_NEW'
+  }
+
+  return new Promise((resolve, reject) => {
+    docClient.update(params, (err, data) => { err ? reject(err) : resolve(data) })
+  })
+}
+
+exports.delete = (tableName, key) => {
+  const params = { TableName: tableName, Key: key }
+
+  return new Promise((resolve, reject) => {
+    docClient.delete(params, (err, data) => { err ? reject(err) : resolve(data) })
+  })
+}
