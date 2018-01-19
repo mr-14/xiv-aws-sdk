@@ -5,7 +5,7 @@ exports.handler = handler => ctx => (event, context, callback) => {
       callback(result.err)
       return
     }
-    event = result
+    event.auth = result
   }
 
   console.log('Request =', JSON.stringify(event, null, 2))
