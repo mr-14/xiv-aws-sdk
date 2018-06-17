@@ -12,5 +12,16 @@
   "dependencies": {},
   "peerDependencies": {
     "aws-sdk": "^2.180.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "aws-sdk": "^2.259.1"
+  },
+  "scripts": {
+    "build": "babel src -d dist",
+    "prepublishOnly": "npm run build"
   }
 }

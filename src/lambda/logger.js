@@ -1,13 +1,4 @@
-exports.handler = handler => ctx => (event, context, callback) => {
-  if (ctx.authorize) {
-    const result = ctx.authorize(event)
-    if (result.err) {
-      callback(result.err)
-      return
-    }
-    event.auth = result
-  }
-
+export default (event, context, callback) => {
   console.log('Request =', JSON.stringify(event, null, 2))
   const req = Object.assign({}, event, { body: event.body ? JSON.parse(event.body) : null })
 
@@ -21,5 +12,5 @@ exports.handler = handler => ctx => (event, context, callback) => {
     }
   }
 
-  handler(req, resp, ctx)
+  return { req, resp, context }
 }
