@@ -52,7 +52,7 @@ exports.update = (tableName, key, items) => {
   items.forEach(item => {
     const itemOp = item.op || '='
     itemVals[':' + item.key] = item.val
-    itemClause += delim + item.key + keyOp + ':' + item.key
+    itemClause += delim + item.key + itemOp + ':' + item.key
     delim = ', '
   })
 
