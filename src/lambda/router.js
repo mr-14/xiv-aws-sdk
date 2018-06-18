@@ -13,5 +13,7 @@ export default (event, context, callback, routes) => {
 }
 
 function getPath(path, pathVars) {
+  if (!pathVars) { return path }
+
   return Object.keys(pathVars).reduce((path, key) => (path.replace(`{${key}}`, pathVars[key])), path)
 }
