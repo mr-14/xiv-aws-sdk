@@ -6,8 +6,13 @@ export default (event, context, callback, routes) => {
 
     const path = getPath(route.path, event.pathParameters)
 
-    if (path === event.path) {
+    if (path !== event.path) { continue }
+
+    try {
       route.handler(logger(event, context, callback))
+    } catch (err) {
+      console.error(err)
+      callback(err)
     }
   }
 }

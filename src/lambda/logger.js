@@ -8,6 +8,11 @@ export default (event, context, callback) => {
       callback(err)
     } else {
       console.log('Response =', JSON.stringify(data, null, 2))
+
+      if (data.body && typeof data.body !== 'string') {
+        data.body = JSON.stringify(data.body)
+      }
+
       callback(null, data)
     }
   }
