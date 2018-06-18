@@ -9,6 +9,14 @@ export default (event, context, callback) => {
     } else {
       console.log('Response =', JSON.stringify(data, null, 2))
 
+      if (!data.headers) {
+        data.headers = {}
+      }
+
+      if (!data.headers['Access-Control-Allow-Origin']) {
+        data.headers['Access-Control-Allow-Origin'] = '*'
+      }
+
       if (data.body && typeof data.body !== 'string') {
         data.body = JSON.stringify(data.body)
       }
