@@ -1,4 +1,4 @@
-export default (event, context, callback) => {
+module.exports = (event, context, callback) => {
   console.log('Request =', JSON.stringify(event, null, 2))
   const req = Object.assign({}, event, { body: event.body ? JSON.parse(event.body) : null })
 

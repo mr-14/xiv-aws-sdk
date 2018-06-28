@@ -1,6 +1,6 @@
-import logger from './logger'
+const logger = require('./logger')
 
-export default (event, context, callback, routes) => {
+module.exports = (event, context, callback, routes) => {
   for (const route of routes) {
     if (route.method !== event.httpMethod) { continue }
 
