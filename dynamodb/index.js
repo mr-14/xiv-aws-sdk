@@ -1,78 +1,127 @@
-'use strict'
-
 const AWS = require('aws-sdk')
 const docClient = new AWS.DynamoDB.DocumentClient()
 
-exports.put = (tableName, item) => {
+const handleResponse = (action, resolve, reject) => (err, data) => {
+  if (err) {
+    console.log(`Dynamodb ${action} error:`, err)
+    reject(err)
+  } else {
+    console.log(`Dynamodb ${action} result:`, data)
+    resolve(data)
+  }
+}
+
+exports.put = ({ tableName, item, conditions = [] }) => {
+  let conditionClause = ''
+  let conditionNames = {}
+  let conditionVals = {}
+  let delim = ''
+
+  conditions.forEach(item => {
+    if (item.func) {
+      conditionClause += delim + item.func
+    }
+
+    if (item.key) {
+      const op = item.op || '='
+      conditionNames['#' + item.key] = item.key
+      conditionVals[':' + item.key] = item.val
+      conditionClause += `${delim} #${item.key} ${op} :${item.key}`
+    }
+
+    delim = ' AND '
+  })
+
   const params = { TableName: tableName, Item: item }
 
+  if (conditionClause) {
+    params.ConditionExpression = conditionClause
+  }
+
+  if (Object.keys(conditionNames).length > 0) {
+    params.ExpressionAttributeNames = conditionNames
+    params.ExpressionAttributeValues = conditionVals
+  }
+
   return new Promise((resolve, reject) => {
-    docClient.put(params, (err, data) => { err ? reject(err) : resolve(data) })
+    console.log('Dynamodb PUT params:', params)
+    docClient.put(params, handleResponse('PUT', resolve, reject))
   })
 }
 
-exports.get = (tableName, key) => {
+exports.get = ({ tableName, key }) => {
   const params = { TableName: tableName, Key: key }
+
   return new Promise((resolve, reject) => {
-    docClient.get(params, (err, data) => { err ? reject(err) : resolve(data) })
+    console.log('Dynamodb GET params:', params)
+    docClient.get(params, handleResponse('GET', resolve, reject))
   })
 }
 
-exports.query = (tableName, keys) => {
-  let keyClause = '',
-    keyNames = {},
-    keyVals = {},
-    delim = ''
+exports.query = ({ tableName, indexName, keys }) => {
+  let queryClause = ''
+  const queryNames = {}
+  const queryVals = {}
+  let delim = ''
 
   keys.forEach(item => {
-    const keyOp = item.op || '='
-    keyNames['#' + item.key] = item.key
-    keyVals[':' + item.key] = item.val
-    keyClause += delim + '#' + item.key + keyOp + ':' + item.key
-    delim = ' and '
+    const op = item.op || '='
+    queryNames['#' + item.key] = item.key
+    queryVals[':' + item.key] = item.val
+    queryClause += ` ${delim} #${item.key} ${op} :${item.key}`
+    delim = 'AND'
   })
 
   const params = {
     TableName: tableName,
-    KeyConditionExpression: keyClause,
-    ExpressionAttributeNames: keyNames,
-    ExpressionAttributeValues: keyVals
+    KeyConditionExpression: queryClause,
+    ExpressionAttributeNames: queryNames,
+    ExpressionAttributeValues: queryVals
+  }
+
+  if (indexName) {
+    params.IndexName = indexName
   }
 
   return new Promise((resolve, reject) => {
-    docClient.query(params, (err, data) => { err ? reject(err) : resolve(data) })
+    console.log('Dynamodb QUERY params:', params)
+    docClient.query(params, handleResponse('QUERY', resolve, reject))
   })
 }
 
-exports.update = (tableName, key, items) => {
-  let itemClause = 'set ',
-    itemVals = {},
-    delim = ''
+exports.update = ({ tableName, key, item }) => {
+  let updateClause = 'SET '
+  const updateNames = {}
+  const updateVals = {}
+  let delim = ''
 
-  items.forEach(item => {
-    const itemOp = item.op || '='
-    itemVals[':' + item.key] = item.val
-    itemClause += delim + item.key + itemOp + ':' + item.key
-    delim = ', '
+  Object.keys(item).forEach(key => {
+    updateNames['#' + key] = key
+    updateVals[':' + key] = item[key]
+    updateClause += `${delim} #${key} = :${key}`
+    delim = ','
   })
 
   const params = {
     TableName: tableName,
     Key: key,
-    UpdateExpression: itemClause,
-    ExpressionAttributeValues: itemVals,
+    UpdateExpression: updateClause,
+    ExpressionAttributeNames: updateNames,
+    ExpressionAttributeValues: updateVals,
     ReturnValues: 'ALL_NEW'
   }
 
   return new Promise((resolve, reject) => {
-    docClient.update(params, (err, data) => { err ? reject(err) : resolve(data) })
+    console.log('Dynamodb UPDATE params:', params)
+    docClient.update(params, handleResponse('UPDATE', resolve, reject))
   })
 }
 
-exports.delete = (tableName, key) => {
+exports.delete = ({ tableName, key }) => {
   const params = { TableName: tableName, Key: key }
 
   return new Promise((resolve, reject) => {
-    docClient.delete(params, (err, data) => { err ? reject(err) : resolve(data) })
+    console.log('Dynamodb DELETE params:', params)
+    docClient.delete(params, handleResponse('DELETE', resolve, reject))
   })
 }
