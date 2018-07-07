@@ -1,13 +1,13 @@
 const AWS = require('aws-sdk')
 const docClient = new AWS.DynamoDB.DocumentClient()
 
-const handleResponse = (action, resolve, reject) => (err, data) => {
+const handleResponse = (action, resolve, reject, dataParser) => (err, data) => {
   if (err) {
     console.log(`Dynamodb ${action} error:`, err)
     reject(err)
   } else {
     console.log(`Dynamodb ${action} result:`, data)
-    resolve(data)
+    resolve(dataParser ? dataParser(data) : data)
   }
 }
 
@@ -54,17 +54,17 @@ exports.get = ({ tableName, key }) => {
 
   return new Promise((resolve, reject) => {
     console.log('Dynamodb GET params:', params)
-    docClient.get(params, handleResponse('GET', resolve, reject))
+    docClient.get(params, handleResponse('GET', resolve, reject, data => data.Item))
   })
 }
 
-exports.query = ({ tableName, indexName, keys }) => {
+exports.query = ({ tableName, indexName, items }) => {
   let queryClause = ''
   const queryNames = {}
   const queryVals = {}
   let delim = ''
 
-  keys.forEach(item => {
+  items.forEach(item => {
     const op = item.op || '='
     queryNames['#' + item.key] = item.key
     queryVals[':' + item.key] = item.val
@@ -85,7 +85,7 @@ exports.query = ({ tableName, indexName, keys }) => {
 
   return new Promise((resolve, reject) => {
     console.log('Dynamodb QUERY params:', params)
-    docClient.query(params, handleResponse('QUERY', resolve, reject))
+    docClient.query(params, handleResponse('QUERY', resolve, reject, data => data.Items))
   })
 }
 
