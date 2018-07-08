@@ -15,6 +15,9 @@ module.exports = async (event, context, routes) => {
 
     return {
       statusCode: err.statusCode ? err.statusCode : 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
       body: JSON.stringify({
         message: err.message ? err.message : 'error.internal',
       })
