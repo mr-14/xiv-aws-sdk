@@ -46,7 +46,7 @@ function getPath(path, pathVars) {
 }
 
 function formatRequest(req) {
-  const contentType = req.headers['content-type']
+  const contentType = req.headers['content-type'] || ''
   
   if (contentType.startsWith('application/json') && req.body) {
     req.body = JSON.parse(req.body)
