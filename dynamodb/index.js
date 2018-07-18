@@ -19,7 +19,8 @@ exports.put = ({ tableName, item, conditions = [] }) => {
 
   conditions.forEach(item => {
     if (item.func) {
-      conditionClause += delim + item.func
+      conditionNames['#' + item.val] = item.val
+      conditionClause += `${delim} ${item.func}(#${item.val})`
     }
 
     if (item.key) {
@@ -40,6 +41,9 @@ exports.put = ({ tableName, item, conditions = [] }) => {
 
   if (Object.keys(conditionNames).length > 0) {
     params.ExpressionAttributeNames = conditionNames
+  }
+
+  if (Object.keys(conditionVals).length > 0) {
     params.ExpressionAttributeValues = conditionVals
   }
 

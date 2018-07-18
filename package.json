@@ -11,6 +11,7 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "aws-sdk": "^2.180.0"
+    "aws-sdk": "^2.180.0",
+    "xiv-js-sdk": "^0.1.5"
   }
 }

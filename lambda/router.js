@@ -1,11 +1,11 @@
-module.exports = async (event, context, routes) => {
+module.exports = async ({ event, context }) => {
   try {
-    const handler = getHandler(event, routes)
+    const handler = getHandler(event, context.routes)
 
     const req = formatRequest(event)
     console.log('Request =', JSON.stringify(req, null, 2))
 
-    const raw = await handler({ req, context })
+    const raw = await handler({ event: req, context })
     const resp = formatResponse(raw)
     console.log('Response =', JSON.stringify(resp, null, 2))
 
@@ -46,8 +46,8 @@ function getPath(path, pathVars) {
 }
 
 function formatRequest(req) {
-  const contentType = req.headers['content-type'] || ''
-  
+  const contentType = req.headers['Content-Type'] || req.headers['content-type'] || ''
+
   if (contentType.startsWith('application/json') && req.body) {
     req.body = JSON.parse(req.body)
   }
