@@ -48,7 +48,6 @@ exports.put = ({ tableName, item, conditions = [] }) => {
   }
 
   return new Promise((resolve, reject) => {
-    console.log('Dynamodb PUT params:', params)
     docClient.put(params, handleResponse('PUT', resolve, reject))
   })
 }
@@ -57,7 +56,6 @@ exports.get = ({ tableName, key }) => {
   const params = { TableName: tableName, Key: key }
 
   return new Promise((resolve, reject) => {
-    console.log('Dynamodb GET params:', params)
     docClient.get(params, handleResponse('GET', resolve, reject, data => data.Item))
   })
 }
@@ -88,22 +86,42 @@ exports.query = ({ tableName, indexName, items }) => {
   }
 
   return new Promise((resolve, reject) => {
-    console.log('Dynamodb QUERY params:', params)
     docClient.query(params, handleResponse('QUERY', resolve, reject, data => data.Items))
   })
 }
 
-exports.update = ({ tableName, key, item }) => {
+exports.update = ({ tableName, key, item, conditions = [] }) => {
   let updateClause = 'SET '
   const updateNames = {}
   const updateVals = {}
-  let delim = ''
+  let updateDelim = ''
 
   Object.keys(item).forEach(key => {
     updateNames['#' + key] = key
     updateVals[':' + key] = item[key]
-    updateClause += `${delim} #${key} = :${key}`
-    delim = ','
+    updateClause += `${updateDelim} #${key} = :${key}`
+    updateDelim = ','
+  })
+
+  let conditionClause = ''
+  let conditionNames = {}
+  let conditionVals = {}
+  let conditionDelim = ''
+
+  conditions.forEach(item => {
+    if (item.func) {
+      conditionNames['#' + item.val] = item.val
+      conditionClause += `${conditionDelim} ${item.func}(#${item.val})`
+    }
+
+    if (item.key) {
+      const op = item.op || '='
+      conditionNames['#' + item.key] = item.key
+      conditionVals[':' + item.key] = item.val
+      conditionClause += `${conditionDelim} #${item.key} ${op} :${item.key}`
+    }
+
+    conditionDelim = ' AND '
   })
 
   const params = {
@@ -115,9 +133,20 @@ exports.update = ({ tableName, key, item }) => {
     ReturnValues: 'ALL_NEW'
   }
 
+  if (conditionClause) {
+    params.ConditionExpression = conditionClause
+  }
+
+  if (Object.keys(conditionNames).length > 0) {
+    params.ExpressionAttributeNames = Object.assign(params.ExpressionAttributeNames, conditionNames)
+  }
+
+  if (Object.keys(conditionVals).length > 0) {
+    params.ExpressionAttributeValues = Object.assign(params.ExpressionAttributeValues, conditionVals)
+  }
+
   return new Promise((resolve, reject) => {
-    console.log('Dynamodb UPDATE params:', params)
-    docClient.update(params, handleResponse('UPDATE', resolve, reject))
+    docClient.update(params, handleResponse('UPDATE', resolve, reject, data => data.Attributes))
   })
 }
 
@@ -125,7 +154,6 @@ exports.delete = ({ tableName, key }) => {
   const params = { TableName: tableName, Key: key }
 
   return new Promise((resolve, reject) => {
-    console.log('Dynamodb DELETE params:', params)
     docClient.delete(params, handleResponse('DELETE', resolve, reject))
   })
 }

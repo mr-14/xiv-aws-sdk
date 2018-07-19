@@ -6,7 +6,6 @@ module.exports = middleware => async ({ event, context }) => {
 
   try {
     context.token = jwt.validateToken(config.tokenKey, token)
-    return await middleware({ event, context })
   } catch (err) {
     return {
       statusCode: 401,
@@ -14,4 +13,6 @@ module.exports = middleware => async ({ event, context }) => {
       body: JSON.stringify({ message: err.message })
     }
   }
+
+  return await middleware({ event, context })
 }
