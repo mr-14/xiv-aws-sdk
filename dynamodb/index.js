@@ -52,15 +52,19 @@ exports.put = ({ tableName, item, conditions = [] }) => {
   })
 }
 
-exports.get = ({ tableName, key }) => {
+exports.get = ({ tableName, key, attrs = [] }) => {
   const params = { TableName: tableName, Key: key }
 
+  if (attrs.length > 0) {
+    params.AttributesToGet = attrs
+  }
+  
   return new Promise((resolve, reject) => {
     docClient.get(params, handleResponse('GET', resolve, reject, data => data.Item))
   })
 }
 
-exports.query = ({ tableName, indexName, items }) => {
+exports.query = ({ tableName, indexName, items, attrs = [] }) => {
   let queryClause = ''
   const queryNames = {}
   const queryVals = {}
@@ -83,6 +87,10 @@ exports.query = ({ tableName, indexName, items }) => {
 
   if (indexName) {
     params.IndexName = indexName
+  }
+
+  if (attrs.length > 0) {
+    params.AttributesToGet = attrs
   }
 
   return new Promise((resolve, reject) => {
