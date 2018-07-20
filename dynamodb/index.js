@@ -11,7 +11,7 @@ const handleResponse = (action, resolve, reject, dataParser) => (err, data) => {
   }
 }
 
-exports.put = ({ tableName, item, conditions = [] }) => {
+exports.put = ({ tableName, item, conditions = [], extra = {} }) => {
   let conditionClause = ''
   let conditionNames = {}
   let conditionVals = {}
@@ -33,7 +33,7 @@ exports.put = ({ tableName, item, conditions = [] }) => {
     delim = ' AND '
   })
 
-  const params = { TableName: tableName, Item: item }
+  const params = Object.assign({ TableName: tableName, Item: item }, extra)
 
   if (conditionClause) {
     params.ConditionExpression = conditionClause
@@ -48,6 +48,7 @@ exports.put = ({ tableName, item, conditions = [] }) => {
   }
 
   return new Promise((resolve, reject) => {
+    console.log('Dynamodb PUT params:', params)
     docClient.put(params, handleResponse('PUT', resolve, reject))
   })
 }
@@ -56,10 +57,11 @@ exports.get = ({ tableName, key, attrs = [] }) => {
   const params = { TableName: tableName, Key: key }
 
   if (attrs.length > 0) {
-    params.AttributesToGet = attrs
+    params.ProjectionExpression = attrs
   }
   
   return new Promise((resolve, reject) => {
+    console.log('Dynamodb GET params:', params)
     docClient.get(params, handleResponse('GET', resolve, reject, data => data.Item))
   })
 }
@@ -90,10 +92,11 @@ exports.query = ({ tableName, indexName, items, attrs = [] }) => {
   }
 
   if (attrs.length > 0) {
-    params.AttributesToGet = attrs
+    params.ProjectionExpression = attrs
   }
 
   return new Promise((resolve, reject) => {
+    console.log('Dynamodb QUERY params:', params)
     docClient.query(params, handleResponse('QUERY', resolve, reject, data => data.Items))
   })
 }
@@ -154,6 +157,7 @@ exports.update = ({ tableName, key, item, conditions = [] }) => {
   }
 
   return new Promise((resolve, reject) => {
+    console.log('Dynamodb UPDATE params:', params)
     docClient.update(params, handleResponse('UPDATE', resolve, reject, data => data.Attributes))
   })
 }
@@ -162,6 +166,7 @@ exports.delete = ({ tableName, key }) => {
   const params = { TableName: tableName, Key: key }
 
   return new Promise((resolve, reject) => {
+    console.log('Dynamodb DELETE params:', params)
     docClient.delete(params, handleResponse('DELETE', resolve, reject))
   })
 }
