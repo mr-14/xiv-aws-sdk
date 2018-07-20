@@ -53,20 +53,31 @@ exports.put = ({ tableName, item, conditions = [], extra = {} }) => {
   })
 }
 
-exports.get = ({ tableName, key, attrs = [] }) => {
-  const params = { TableName: tableName, Key: key }
+exports.get = ({ tableName, key, projections = [] }) => {
+  let projectionClause = ''
+  const projectionNames = {}
+  let projectionDelim = ''
 
-  if (attrs.length > 0) {
-    params.ProjectionExpression = attrs
-  }
+  projections.forEach(item => {
+    projectionNames['#' + item] = item
+    projectionClause += `${projectionDelim} #${item}`
+    projectionDelim = ','
+  })
+
+  const params = { TableName: tableName, Key: key }
   
+  if (projectionClause) {
+    params.ProjectionExpression = projectionClause
+    params.ExpressionAttributeNames = Object.assign(params.ExpressionAttributeNames, projectionNames)
+  }
+
   return new Promise((resolve, reject) => {
     console.log('Dynamodb GET params:', params)
     docClient.get(params, handleResponse('GET', resolve, reject, data => data.Item))
   })
 }
 
-exports.query = ({ tableName, indexName, items, attrs = [] }) => {
+exports.query = ({ tableName, indexName, items, projections = [] }) => {
   let queryClause = ''
   const queryNames = {}
   const queryVals = {}
@@ -80,6 +91,16 @@ exports.query = ({ tableName, indexName, items, attrs = [] }) => {
     delim = 'AND'
   })
 
+  let projectionClause = ''
+  const projectionNames = {}
+  let projectionDelim = ''
+
+  projections.forEach(item => {
+    projectionNames['#' + item] = item
+    projectionClause += `${projectionDelim} #${item}`
+    projectionDelim = ','
+  })
+
   const params = {
     TableName: tableName,
     KeyConditionExpression: queryClause,
@@ -87,12 +108,13 @@ exports.query = ({ tableName, indexName, items, attrs = [] }) => {
     ExpressionAttributeValues: queryVals
   }
 
-  if (indexName) {
-    params.IndexName = indexName
+  if (projectionClause) {
+    params.ProjectionExpression = projectionClause
+    params.ExpressionAttributeNames = Object.assign(params.ExpressionAttributeNames, projectionNames)
   }
 
-  if (attrs.length > 0) {
-    params.ProjectionExpression = attrs
+  if (indexName) {
+    params.IndexName = indexName
   }
 
   return new Promise((resolve, reject) => {
@@ -146,9 +168,6 @@ exports.update = ({ tableName, key, item, conditions = [] }) => {
 
   if (conditionClause) {
     params.ConditionExpression = conditionClause
-  }
-
-  if (Object.keys(conditionNames).length > 0) {
     params.ExpressionAttributeNames = Object.assign(params.ExpressionAttributeNames, conditionNames)
   }
 
