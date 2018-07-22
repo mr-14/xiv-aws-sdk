@@ -65,7 +65,7 @@ exports.get = ({ tableName, key, projections = [] }) => {
   })
 
   const params = { TableName: tableName, Key: key }
-  
+
   if (projectionClause) {
     params.ProjectionExpression = projectionClause
     params.ExpressionAttributeNames = Object.assign(params.ExpressionAttributeNames, projectionNames)
@@ -85,9 +85,25 @@ exports.query = ({ tableName, indexName, items, projections = [] }) => {
 
   items.forEach(item => {
     const op = item.op || '='
-    queryNames['#' + item.key] = item.key
-    queryVals[':' + item.key] = item.val
-    queryClause += ` ${delim} #${item.key} ${op} :${item.key}`
+
+    switch (op) {
+      case 'begin':
+        queryClause += ` ${delim} begins_with(#${item.key}, :${item.key})`
+        queryNames['#' + item.key] = item.key
+        queryVals[':' + item.key] = item.val
+        break
+      case 'between':
+        queryClause += ` ${delim} #${item.key} BETWEEN :${item.key}1 AND :${item.key}2`
+        queryNames[`#${item.key}`] = item.key
+        queryVals[`:${item.key}1`] = item.val1
+        queryVals[`:${item.key}2`] = item.val2
+        break
+      default:
+        queryClause += ` ${delim} #${item.key} ${op} :${item.key}`
+        queryNames['#' + item.key] = item.key
+        queryVals[':' + item.key] = item.val
+    }
+
     delim = 'AND'
   })
 
