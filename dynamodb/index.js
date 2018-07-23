@@ -68,7 +68,7 @@ exports.get = ({ tableName, key, projections = [] }) => {
 
   if (projectionClause) {
     params.ProjectionExpression = projectionClause
-    params.ExpressionAttributeNames = Object.assign(params.ExpressionAttributeNames, projectionNames)
+    params.ExpressionAttributeNames = Object.assign(params.ExpressionAttributeNames || {}, projectionNames)
   }
 
   return new Promise((resolve, reject) => {
@@ -126,7 +126,7 @@ exports.query = ({ tableName, indexName, items, projections = [] }) => {
 
   if (projectionClause) {
     params.ProjectionExpression = projectionClause
-    params.ExpressionAttributeNames = Object.assign(params.ExpressionAttributeNames, projectionNames)
+    params.ExpressionAttributeNames = Object.assign(params.ExpressionAttributeNames || {}, projectionNames)
   }
 
   if (indexName) {
