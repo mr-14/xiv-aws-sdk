@@ -6,7 +6,7 @@ const handleResponse = (action, resolve, reject, dataParser) => (err, data) => {
     console.log(`Dynamodb ${action} error:`, err)
     reject(err)
   } else {
-    console.log(`Dynamodb ${action} result:`, data)
+    console.log(`Dynamodb ${action} result:`, JSON.stringify(data, null, 2))
     resolve(dataParser ? dataParser(data) : data)
   }
 }
@@ -49,7 +49,7 @@ exports.put = ({ tableName, item, conditions = [], extra = {} }) => {
 
   return new Promise((resolve, reject) => {
     console.log('Dynamodb PUT params:', params)
-    docClient.put(params, handleResponse('PUT', resolve, reject))
+    docClient.put(params, handleResponse('PUT', resolve, reject, () => params))
   })
 }
 
@@ -139,7 +139,7 @@ exports.query = ({ tableName, indexName, items, projections = [] }) => {
   })
 }
 
-exports.update = ({ tableName, key, item, conditions = [] }) => {
+exports.update = ({ tableName, key, item = [], conditions = [], extra = {} }) => {
   let updateClause = 'SET '
   const updateNames = {}
   const updateVals = {}
@@ -173,13 +173,16 @@ exports.update = ({ tableName, key, item, conditions = [] }) => {
     conditionDelim = ' AND '
   })
 
-  const params = {
+  const params = Object.assign({
     TableName: tableName,
     Key: key,
     UpdateExpression: updateClause,
-    ExpressionAttributeNames: updateNames,
     ExpressionAttributeValues: updateVals,
     ReturnValues: 'ALL_NEW'
+  }, extra)
+
+  if (Object.keys(updateNames).length > 0) {
+    params.ExpressionAttributeNames = updateNames
   }
 
   if (conditionClause) {
