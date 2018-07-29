@@ -49,7 +49,7 @@ exports.put = ({ tableName, item, conditions = [], extra = {} }) => {
 
   return new Promise((resolve, reject) => {
     console.log('Dynamodb PUT params:', params)
-    docClient.put(params, handleResponse('PUT', resolve, reject, () => params))
+    docClient.put(params, handleResponse('PUT', resolve, reject, () => params.Item))
   })
 }
 
