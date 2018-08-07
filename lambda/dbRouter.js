@@ -1,9 +1,13 @@
-module.exports = ({ event, context }) => {
+module.exports = async ({ event, context }) => {
   try {
-    getHandlers(event.Records, context.dbEvents).forEach(async ({record, handler}) => {
+    const handlers = []
+
+    getHandlers(event.Records, context.dbEvents).forEach(({record, handler}) => {
       console.log('DBEvent =', JSON.stringify(record, null, 2))
-      await handler({ event: record, context })
+      handlers.push(handler({ event: record, context }))
     })
+
+    return Promise.all(handlers)
   } catch (err) {
     console.error(err)
   }
