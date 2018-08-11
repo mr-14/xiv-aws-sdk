@@ -15,9 +15,7 @@ module.exports = async ({ event, context }) => {
 
     return {
       statusCode: err.statusCode ? err.statusCode : 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*'
-      },
+      headers: { 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({
         message: err.message ? err.message : 'error.internal',
       })
@@ -30,7 +28,6 @@ function getHandler(event, routes) {
     if (route.method !== event.httpMethod) { continue }
 
     const path = getPath(route.path, event.pathParameters)
-
     if (path !== event.path) { continue }
 
     return route.handler

@@ -172,7 +172,7 @@ exports.update = ({ tableName, key, item = [], conditions = [], extra = {} }) =>
 
     conditionDelim = ' AND '
   })
-
+  
   const params = Object.assign({
     TableName: tableName,
     Key: key,
@@ -180,18 +180,18 @@ exports.update = ({ tableName, key, item = [], conditions = [], extra = {} }) =>
     ExpressionAttributeValues: updateVals,
     ReturnValues: 'ALL_NEW'
   }, extra)
-
+  
   if (Object.keys(updateNames).length > 0) {
     params.ExpressionAttributeNames = updateNames
   }
 
   if (conditionClause) {
     params.ConditionExpression = conditionClause
-    params.ExpressionAttributeNames = Object.assign(params.ExpressionAttributeNames, conditionNames)
+    params.ExpressionAttributeNames = Object.assign(params.ExpressionAttributeNames || {}, conditionNames)
   }
-
+  
   if (Object.keys(conditionVals).length > 0) {
-    params.ExpressionAttributeValues = Object.assign(params.ExpressionAttributeValues, conditionVals)
+    params.ExpressionAttributeValues = Object.assign(params.ExpressionAttributeValues || {}, conditionVals)
   }
 
   return new Promise((resolve, reject) => {
